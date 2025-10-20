@@ -1,0 +1,51 @@
+#include #include // для математичних функцій using namespace std; 
+
+int main() { const double pi = 3.1415926535; // константа π 
+
+// ===== Завдання 1: Integer16 ===== 
+cout << "=== Завдання 1: Integer16 ===" << endl; 
+int n; 
+cout << "Введiть тризначне число: "; 
+cin >> n; 
+ 
+int hundreds = n / 100;          // сотні 
+int tens = (n / 10) % 10;        // десятки 
+int ones = n % 10;               // одиниці 
+ 
+int result = hundreds * 100 + ones * 10 + tens; 
+cout << "Результат перестановки десятків i одиниць: " << result << endl; 
+ 
+ 
+// ===== Завдання 2: Boolean27 ===== 
+cout << "\n=== Завдання 2: Boolean27 ===" << endl; 
+double x, y; 
+cout << "Введiть координати точки x i y: "; 
+cin >> x >> y; 
+ 
+bool inSecond = (x < 0 && y > 0);   // друга чверть 
+bool inThird  = (x < 0 && y < 0);   // третя чверть 
+bool resultBool = inSecond || inThird; 
+ 
+cout << "Точка лежить у 2-й або 3-й координатнiй чвертi: "  
+    << (resultBool ? "true" : "false") << endl; 
+ 
+ 
+// ===== Завдання 3: Обчислення виразу (Таблиця 3, №12) ===== 
+cout << "\n=== Завдання 3: Обчислення виразу ===" << endl; 
+double x_val; 
+cout << "Введiть значення x: "; 
+cin >> x_val; 
+ 
+// формули з використанням log base 5 → log(|a|)/log(5) 
+double numerator = tan(fabs(2 * x_val * x_val + 5 * x_val - 31.15))  
+                  + log(fabs(x_val - 2.5)) / log(5); 
+ 
+double denominator = cbrt(fabs(pow(sin(pow(x_val, 3)), 2)  
+                     + (1.0/3.0) * (log(fabs(x_val * x_val - 2.5)) / log(5)))); 
+ 
+double y_val = numerator / denominator; 
+ 
+cout << "Результат y = " << y_val << endl; 
+ 
+return 0; 
+ 
