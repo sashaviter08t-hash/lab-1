@@ -1,0 +1,150 @@
+// Lab 3: Branching + Geometry + Menu
+// Compile as a single console app in QtCreator
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <cstdlib>
+
+using namespace std;
+
+// ====== декларації задач ======
+void task_if1();     // приклад з методички (ціле число, якщо >0 — відняти 8)
+void task_if24();    // If24: кусочно-задана f(x)
+void task_geom34();  // Варіант 3–4: жовта (3) та коричнева (4) області
+void show_menu();    // головне меню
+
+// ====== допоміжні функції ======
+static bool inTriangle(double x, double y, double a) {
+    // Прямокутний рівнобедрений трикутник: вершини (0,0), (0,a), (a,0)
+    // Умова належності: x>=0, y>=0, x+y<=a
+    return (x >= 0.0 && y >= 0.0 && x + y <= a);
+}
+
+static bool inCircle(double x, double y, double r) {
+    // Коло радіуса r з центром у (r, 0): (x - r)^2 + y^2 <= r^2
+    const double dx = x - r;
+    return dx*dx + y*y <= r*r + 1e-12; // невеликий допуск на похибку
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    show_menu();
+    int menu;
+    cout << "Task number: ";
+    if (!(cin >> menu)) {
+        cerr << "Помилка: очікувалось число.\n";
+        return 1;
+    }
+
+    switch (menu) {
+        case 1: task_if1();    break; // Завдання 1 (приклад)
+        case 2: task_if24();   break; // Завдання 1 (If24)
+        case 3: task_geom34(); break; // Завдання 2 (геометрія 3–4)
+        default:
+            cout << "Wrong task! (Only 1, 2, 3)\n";
+    }
+
+    cout << "\n-- Program finished --\n";
+
+#ifdef _WIN32
+    system("pause");
+#endif
+    return 0;
+}
+
+// ====== Завдання 1 (приклад із методички) ======
+void task_if1() {
+    cout << "\n************* If 1 *****************\n";
+    cout << "Умова: дано ціле n. Якщо n>0, відняти 8; інакше не змінювати.\n";
+
+    cout << "Integer number n: ";
+    long long n;
+    if (!(cin >> n)) {
+        cout << "Wrong integer!\n";
+        return;
+    }
+    if (n > 0) n -= 8;
+
+    cout << "After transformation: " << n << "\n";
+}
+
+// ====== Завдання 1 (If24) ======
+// f(x) = { 2*sin(x), якщо x>0; 6 - x, якщо x<=0 }
+void task_if24() {
+    cout << "\n************* If 24 ***************\n";
+    cout << "Умова: f(x)= 2*sin(x), якщо x>0; інакше f(x)=6-x.\n";
+
+    cout << "Введіть дійсне x: ";
+    double x;
+    if (!(cin >> x)) {
+        cout << "Некоректні дані!\n";
+        return;
+    }
+
+    double f;
+    if (x > 0.0) {
+        f = 2.0 * sin(x);
+    } else {
+        f = 6.0 - x;
+    }
+
+    cout << fixed << setprecision(6);
+    cout << "f(x) = " << f << "\n";
+}
+
+// ====== Завдання 2 (геометрія, варіанти 3–4) ======
+// Інтерпретація рисунка 3–4 (див. завдання):
+// - Трикутник — прямокутний рівнобедрений із вершинами (0,0), (0,a), (a,0).
+//   Область: x>=0, y>=0, x+y<=a.
+// - Коло радіуса r з центром (r, 0). Рівняння: (x - r)^2 + y^2 <= r^2.
+// - Варіант 3 (жовтий): у трикутнику, але НЕ в колі.
+// - Варіант 4 (коричневий): УСЕ коло (включно з перетином із трикутником).
+void task_geom34() {
+    cout << "\n************* Geometry 3–4 *********\n";
+    cout << "Введіть параметри фігур (a>0 — сторона трикутника, r>0 — радіус кола)\n";
+    cout << "a r: ";
+
+    double a, r;
+    if (!(cin >> a >> r) || a <= 0.0 || r <= 0.0) {
+        cout << "Некоректні дані для a або r!\n";
+        return;
+    }
+
+    cout << "Введіть координати точки (x y): ";
+    double x, y;
+    if (!(cin >> x >> y)) {
+        cout << "Некоректні координати!\n";
+        return;
+    }
+
+    const bool tri = inTriangle(x, y, a);
+    const bool cir = inCircle(x, y, r);
+
+    const bool yellow_var3 = tri && !cir; // тільки жовта область
+    const bool brown_var4  = cir;         // ВСЕ коло (включно з перетином)
+
+    cout << boolalpha;
+    cout << "\nНалежність:\n";
+    cout << "  трикутник: " << tri << "\n";
+    cout << "  коло:      " << cir << "\n";
+
+    if (yellow_var3) {
+        cout << "→ Точка належить ЖОВТІЙ області (варіант 3).\n";
+    } else if (brown_var4) {
+        cout << "→ Точка належить КОРИЧНЕВІЙ області (варіант 4).\n";
+    } else {
+        cout << "→ Точка НЕ належить ні жовтій (3), ні коричневій (4) області.\n";
+    }
+}
+
+// ====== допоміжне меню ======
+void show_menu() {
+    cout << "================ MENU ================\n";
+    cout << "1 — If1 (приклад: n>0 ? n-8 : n)\n";
+    cout << "2 — If24 (f(x): x>0 → 2*sin(x), інакше 6-x)\n";
+    cout << "3 — Geometry (вар. 3–4: трикутник та коло)\n";
+    cout << "======================================\n";
+}
