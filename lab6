@@ -1,0 +1,201 @@
+// Лабораторна робота
+// Тема: Обробка одновимірних масивів мовою C++
+// Середовище: QtCreator (консольна програма)
+// Завдання: Array48, Array101
+
+#include <iostream>
+#include <iomanip>
+#include <limits>
+#include <string>
+#include <unordered_map>
+
+using namespace std;
+
+// Максимальний допустимий розмір масиву
+const int N = 50;
+
+// ================= ФУНКЦІЇ ВВЕДЕННЯ =================
+
+// Введення додатного цілого числа (> 0)
+int input_positive_int(const string& prompt) {
+    int value;
+    while (true) {
+        cout << prompt;
+        cin >> value;
+
+        // Перевірка на помилки введення
+        if (cin.fail() || value <= 0) {
+            cin.clear(); // очищення стану потоку
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // очищення буфера
+            cout << "Помилка! Введіть ціле число більше 0.\n";
+        } else {
+            return value;
+        }
+    }
+}
+
+// Введення будь-якого цілого числа
+int input_int(const string& prompt) {
+    int value;
+    while (true) {
+        cout << prompt;
+        cin >> value;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Помилка! Введіть ціле число.\n";
+        } else {
+            return value;
+        }
+    }
+}
+
+// Введення числа в заданому діапазоні [lo; hi]
+int input_int_range(const string& prompt, int lo, int hi) {
+    int value;
+    while (true) {
+        value = input_int(prompt);
+        if (value < lo || value > hi) {
+            cout << "Помилка! Введіть число в діапазоні ["
+                 << lo << "; " << hi << "].\n";
+        } else {
+            return value;
+        }
+    }
+}
+
+// ================= РОБОТА З МАСИВОМ =================
+
+// Введення масиву
+void input_array(int in_arr[N], int &in_n) {
+    // Введення кількості елементів масиву
+    while (true) {
+        in_n = input_positive_int("Count of elements (1..50): ");
+        if (in_n <= N) break;
+        cout << "Помилка! Максимальний розмір масиву — " << N << ".\n";
+    }
+
+    // Введення елементів масиву
+    for (int i = 0; i < in_n; i++) {
+        in_arr[i] = input_int("Element " + to_string(i + 1) + ": ");
+    }
+}
+
+// Виведення масиву
+void output_array(const int out_arr[N], const int out_n) {
+    cout << "Array elements:\n";
+    for (int i = 0; i < out_n; i++) {
+        cout << out_arr[i] << " ";
+    }
+    cout << "\n";
+}
+
+// ================= ЗАВДАННЯ Array48 =================
+// Дан цілочисельний масив. Знайти максимальну кількість однакових елементів.
+
+int max_equal_count(const int arr[N], int n) {
+    unordered_map<int, int> freq; // контейнер для підрахунку частот
+    int best = 0;
+
+    // Підрахунок повторень кожного елемента
+    for (int i = 0; i < n; i++) {
+        int count = ++freq[arr[i]];
+        if (count > best) best = count;
+    }
+    return best;
+}
+
+// Функція виконання завдання Array48
+void task_array48() {
+    int a[N], n;
+
+    input_array(a, n);   // введення масиву
+    output_array(a, n);  // виведення масиву
+
+    int ans = max_equal_count(a, n);
+    cout << "Maximum count of equal elements: " << ans << "\n";
+}
+
+// ================= ЗАВДАННЯ Array101 =================
+// Перед елементом з номером K вставити елемент зі значенням 0.
+
+bool insert_zero_before_k(int arr[N], int &n, int k) {
+    // Перевірка на переповнення масиву
+    if (n >= N) return false;
+
+    // Зсув елементів вправо
+    for (int i = n; i >= k; i--) {
+        arr[i] = arr[i - 1];
+    }
+
+    // Вставка нуля перед K-м елементом
+    arr[k - 1] = 0;
+    n++;
+
+    return true;
+}
+
+// Функція виконання завдання Array101
+void task_array101() {
+    int a[N], n;
+
+    input_array(a, n);
+
+    cout << "\nOriginal array:\n";
+    output_array(a, n);
+
+    // Введення номера елемента K
+    int k = input_int_range("K (1..n): ", 1, n);
+
+    // Вставка елемента
+    if (!insert_zero_before_k(a, n, k)) {
+        cout << "Cannot insert: array is full (max " << N << ").\n";
+        return;
+    }
+
+    cout << "\nModified array (0 inserted before element #" << k << "):\n";
+    output_array(a, n);
+}
+
+// ================= МЕНЮ =================
+
+// Виведення меню вибору завдання
+void show_menu() {
+    cout << "\n========= MENU =========\n";
+    cout << "1 - Array48  (max frequency of equal elements)\n";
+    cout << "2 - Array101 (insert 0 before element K)\n";
+    cout << "0 - Exit\n";
+    cout << "========================\n";
+}
+
+// ================= ГОЛОВНА ФУНКЦІЯ =================
+
+int main() {
+    while (true) {
+        show_menu();
+        int choice = input_int("Choose task: ");
+
+        if (choice == 0) {
+            cout << "Bye!\n";
+            break;
+        }
+
+        switch (choice) {
+            case 1:
+                task_array48();
+                break;
+            case 2:
+                task_array101();
+                break;
+            default:
+                cout << "Невірний пункт меню. Спробуйте ще раз.\n";
+        }
+    }
+
+    return 0;
+три діаграми
+активності: для функції аналізу елементів завдання 1, для функції
+модифікації масиву завдання 2 і для завдання 3.
+
+згенеруй 1  діаграму для функції аналізу елементів завдання 1
