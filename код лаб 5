@@ -1,0 +1,252 @@
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
+#include <string>
+
+using namespace std;
+
+const double PI = 3.14;
+
+// -----------------------------------------------------------
+// Допоміжні функції вводу з контролем діапазону
+// -----------------------------------------------------------
+
+// читання цілого числа з діапазоном [minVal; maxVal]
+int readInt(const string& prompt, int minVal, int maxVal)
+{
+    int value;
+    while (true)
+    {
+        cout << prompt;
+        if (!(cin >> value))
+        {
+            cout << "Помилка вводу. Повторiть.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        if (value < minVal || value > maxVal)
+        {
+            cout << "Значення повинно бути в дiапазонi ["
+                 << minVal << "; " << maxVal << "]. Повторiть.\n";
+            continue;
+        }
+        return value;
+    }
+}
+
+// читання дiйсного числа з (можливо) обмеженим діапазоном
+double readDouble(const string& prompt,
+                  double minVal = -numeric_limits<double>::infinity(),
+                  double maxVal =  numeric_limits<double>::infinity())
+{
+    double value;
+    while (true)
+    {
+        cout << prompt;
+        if (!(cin >> value))
+        {
+            cout << "Помилка вводу. Повторiть.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        if (value < minVal || value > maxVal)
+        {
+            cout << "Значення повинно бути в дiапазонi ["
+                 << minVal << "; " << maxVal << "]. Повторiть.\n";
+            continue;
+        }
+        return value;
+    }
+}
+
+// -----------------------------------------------------------
+// Завдання 1. Перевiрка попадання точки в область (варiант 19)
+// -----------------------------------------------------------
+
+// Спрощена модель фiгури 19-го варiанту:
+// ромб з вершинами (0,r), (r,0), (0,-r), (-r,0),
+// a область 19 – права нижня чверть ромба (x>=0, y<=0).
+// За потреби ти можеш змiнити цю функцiю пiд точну геометрiю з методички.
+bool isInsideVariant19(double x, double y, double r)
+{
+    if (r <= 0.0) return false;
+
+    // Умова належностi ромбу |x| + |y| <= r
+    bool insideRhombus = (fabs(x) + fabs(y) <= r);
+
+    // Частина для 19-го варiанту: права нижня чверть ромба
+    bool rightBottomPart = (x >= 0.0 && y <= 0.0);
+
+    return insideRhombus && rightBottomPart;
+}
+
+void task1()
+{
+    cout << "\n=== Завдання 1 (варiант 19) ===\n";
+    cout << "Пiдрахунок кiлькостi точок, що потрапляють в область\n";
+
+    double r = readDouble("Введiть радiус кiл r (>0): ", 1e-9);
+    int n = readInt("Введiть кiлькiсть точок n (n > 0): ", 1, 1000000);
+
+    int cnt = 0;
+
+    for (int i = 1; i <= n; ++i)
+    {
+        double x = readDouble("x" + to_string(i) + " = ");
+        double y = readDouble("y" + to_string(i) + " = ");
+
+        if (isInsideVariant19(x, y, r))
+            ++cnt;
+    }
+
+    cout << "Кiлькiсть точок у областi (варiант 19): " << cnt << "\n\n";
+}
+
+// -----------------------------------------------------------
+// Завдання 2. Варiант 19
+// S = sum_{k=0}^{n} (-1)^k * (x - pi/2)^{1+2k} / (1+2k)!
+//
+// Для непарних варiантiв – вивести кожен 4-й елемент ряду.
+// -----------------------------------------------------------
+void task2()
+{
+    cout << "\n=== Завдання 2 (варiант 19) ===\n";
+    cout << "S = sum_{k=0}^{n} (-1)^k * (x - pi/2)^{1+2k} / (1 + 2k)!\n";
+    cout << "Для цього варiанту виводяться значення кожного 4-го елемента ряду.\n\n";
+
+    double x = readDouble("Введiть x (дiйсне): ");
+    int n = readInt("Введiть n (натуральне, n >= 0): ", 0, 1000000);
+
+    const double a = x - PI / 2.0;   // (x - pi/2)
+    double term = a;                 // k = 0: (x - pi/2)^1 / 1!
+    double sum  = term;
+
+    cout << fixed << setprecision(10);
+
+    // Елемент нумеруємо з 1.
+    int elementIndex = 1;
+    if (elementIndex % 4 == 0)
+    {
+        cout << "Елемент #" << elementIndex << " = " << term << "\n";
+    }
+
+    // параметризований цикл for
+    for (int k = 1; k <= n; ++k)
+    {
+        // перехiд вiд k-1 до k:
+        // t_k = t_{k-1} * ( -a^2 / ((2k)*(2k+1)) )
+        // (виводиться з формули)
+        double factor = -a * a / ( (2.0 * k) * (2.0 * k + 1.0) );
+        term *= factor;
+        sum  += term;
+
+        ++elementIndex;
+        if (elementIndex % 4 == 0)   // кожен четвертий елемент
+        {
+            cout << "Елемент #" << elementIndex << " = " << term << "\n";
+        }
+    }
+
+    cout << "\nСума S = " << sum << "\n\n";
+}
+
+// -----------------------------------------------------------
+// Завдання 3. Варiант 19
+// Дослiдити ряд на збiжнiсть / розбiжнiсть.
+//     u_n = (2^n - 1) / sqrt( 2^n * n^5 )
+//     S = sum_{n=1}^{inf} u_n
+//
+// Для розбiжного ряду умову закiнчення беремо |u_n| > g.
+// -----------------------------------------------------------
+void task3()
+{
+    cout << "\n=== Завдання 3 (варiант 19) ===\n";
+    cout << "u_n = (2^n - 1) / sqrt( 2^n * n^5 )\n";
+    cout << "S = sum_{n=1}^{inf} u_n\n";
+    cout << "Демонстрацiя процесу сумування до тих пiр, поки |u_n| > g.\n\n";
+
+    double g = readDouble("Введiть g (наприклад 1e+2 ... 1e+5): ", 1.0);
+
+    cout << fixed << setprecision(15);
+
+    int    n   = 1;     // номер члена
+    double u   = 0.0;   // поточний член ряду
+    double sum = 0.0;   // наростаюча сума
+
+    // цикл з передумовою (while) – поки |u| <= g, додаємо члени
+    // початковий u по спец. формулi для n=1
+    double twoPowerN = pow(2.0, n);
+    u   = (twoPowerN - 1.0) / sqrt(twoPowerN * pow(n, 5.0));
+    sum = u;
+
+    while (fabs(u) <= g)
+    {
+        cout << "n = " << n
+             << "\t u_n = " << u
+             << "\t S_n = " << sum << "\n";
+
+        ++n;
+        twoPowerN = pow(2.0, n);
+        u = (twoPowerN - 1.0) / sqrt(twoPowerN * pow(n, 5.0));
+        sum += u;
+    }
+
+    // останній «занадто великий» член
+    cout << "Останнiй обчислений член:\n";
+    cout << "n = " << n
+         << "\t u_n = " << u
+         << "\t |u_n| = " << fabs(u) << " > g = " << g << "\n";
+    cout << "Ряд розбiжний (члени не прагнуть до нуля).\n\n";
+}
+
+// -----------------------------------------------------------
+// Меню (завдання 4)
+// -----------------------------------------------------------
+void showMenu()
+{
+    cout << "============================================\n";
+    cout << "   Лабораторна робота (цикли). Варiант 19\n";
+    cout << "1 - Завдання 1 (геометрична фiгура)\n";
+    cout << "2 - Завдання 2 (параметризований ряд)\n";
+    cout << "3 - Завдання 3 (збiжнiсть / розбiжнiсть ряду)\n";
+    cout << "-1 - Вихiд\n";
+    cout << "============================================\n";
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int menu;
+
+    do
+    {
+        showMenu();
+        menu = readInt("Оберiть номер завдання: ", -1, 3);
+
+        switch (menu)
+        {
+        case 1:
+            task1();
+            break;
+        case 2:
+            task2();
+            break;
+        case 3:
+            task3();
+            break;
+        case -1:
+            cout << "Exit...\n";
+            break;
+        default:
+            cout << "Невiрний номер завдання!\n";
+            break;
+        }
+    } while (menu != -1);
+
+    return 0;
+}
