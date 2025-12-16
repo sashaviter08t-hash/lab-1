@@ -1,0 +1,261 @@
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
+#include <string>
+
+using namespace std;
+
+// ============================================================
+// Допоміжні функції вводу з перевіркою
+// ============================================================
+
+int readInt(const string& prompt, int minVal, int maxVal)
+{
+    int value;
+    while (true)
+    {
+        cout << prompt;
+        if (!(cin >> value))
+        {
+            cout << "Помилка вводу. Введiть цiле число.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        if (value < minVal || value > maxVal)
+        {
+            cout << "Значення повинно бути в дiапазонi [" << minVal
+                 << "; " << maxVal << "]. Повторiть.\n";
+            continue;
+        }
+        return value;
+    }
+}
+
+double readDouble(const string& prompt, double minVal, double maxVal)
+{
+    double value;
+    while (true)
+    {
+        cout << prompt;
+        if (!(cin >> value))
+        {
+            cout << "Помилка вводу. Введiть дiйсне число.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        if (value < minVal || value > maxVal)
+        {
+            cout << "Значення повинно бути в дiапазонi [" << minVal
+                 << "; " << maxVal << "]. Повторiть.\n";
+            continue;
+        }
+        return value;
+    }
+}
+
+// ============================================================
+// Завдання 1 (варіант 3): порахувати точки у жовтій фігурі
+// Фігура: трикутник у І чверті з прямою y = -x + a
+// Умови: x>=0, y>=0, x+y<=a
+// ============================================================
+
+bool inTriangleVar3(double x, double y, double a)
+{
+    return (x >= 0.0) && (y >= 0.0) && (x + y <= a);
+}
+
+// (додатково) варіант 4: коло (x - r)^2 + y^2 <= r^2
+bool inCircleVar4(double x, double y, double r)
+{
+    return ( (x - r)*(x - r) + y*y <= r*r );
+}
+
+void task1()
+{
+    cout << "\n=== Завдання 1 (варiант 3) ===\n";
+    int n = readInt("Введiть кiлькiсть точок n (1..100000): ", 1, 100000);
+
+    double a = readDouble("Введiть a (сторона трикутника), a>0: ", 1e-12, 1e12);
+
+    int countIn = 0;
+
+    cout << "Вводьте точки (xi yi):\n";
+    for (int i = 1; i <= n; i++)
+    {
+        double x, y;
+        // Ввід без окремої перевірки діапазону (може бути будь-який), але з перевіркою типу:
+        while (true)
+        {
+            cout << "Точка " << i << ": ";
+            if (cin >> x >> y) break;
+
+            cout << "Помилка вводу. Введiть два дiйснi числа.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        if (inTriangleVar3(x, y, a)) countIn++;
+    }
+
+    cout << "Кiлькiсть точок у фiгурi (варiант 3): " << countIn << "\n";
+}
+
+// ============================================================
+// Завдання 2 (варіант 14):
+// S = sum_{i=1..n} x^(2i-1) / (i+2)!
+// Для парних варіантів: вивести кожний третій елемент (u3, u6, u9...)
+// ============================================================
+
+void task2()
+{
+    cout << "\n=== Завдання 2 (варiант 14) ===\n";
+
+    double x = readDouble("Введiть x (-1e6..1e6): ", -1e6, 1e6);
+    int n = readInt("Введiть n (1..100000): ", 1, 100000);
+
+    // Обчислення через рекурентне співвідношення, щоб не рахувати степені/факторіали “з нуля”
+    // u_i = x^(2i-1) / (i+2)!
+    // u_{i+1}/u_i = x^2 / (i+3)
+    // бо (i+3)! = (i+3)*(i+2)! і степінь збільшується на 2
+    double sum = 0.0;
+
+    // u1 = x^(1) / 3! = x/6
+    double u = x / 6.0;
+
+    cout << fixed << setprecision(15);
+
+    for (int i = 1; i <= n; i++)
+    {
+        sum += u;
+
+        // парний варіант -> кожний третій елемент
+        if (i % 3 == 0)
+        {
+            cout << "u[" << i << "] = " << u << "\n";
+        }
+
+        // перейти до наступного елемента
+        // u_{i+1} = u_i * (x^2)/(i+3)
+        u *= (x * x) / (i + 3.0);
+    }
+
+    cout << "S = " << sum << "\n";
+}
+
+// ============================================================
+// Завдання 3 (варіант 37):
+// u_n = (2*5*8*...*(3n+2)) / ( x^n * (2n+1)! ), n = 0..∞
+// Критерій зупинки:
+//  - якщо |u_n| < e -> вважаємо збіжним (перериваємо)
+//  - якщо |u_n| > g -> розбіжним (перериваємо)
+// Рекурентно:
+// u_0 = 2 / (x^0 * 1!) = 2
+// u_{n+1} = u_n * (3n+5) / ( x * (2n+3)*(2n+2) )
+// ============================================================
+
+void task3()
+{
+    cout << "\n=== Завдання 3 (варiант 37) ===\n";
+
+    // x може бути будь-яким, але x=0 робить x^n проблемним з n>=1
+    double x = readDouble("Введiть x (x != 0): ", -1e12, 1e12);
+    while (fabs(x) < 1e-18)
+    {
+        cout << "x не може бути 0.\n";
+        x = readDouble("Введiть x (x != 0): ", -1e12, 1e12);
+    }
+
+    // e: 1e-5 .. 1e-20 (в методичці), введемо як діапазон по модулю
+    double e = readDouble("Введiть e (1e-20 .. 1e-5): ", 1e-20, 1e-5);
+    // g: 1e2 .. 1e5
+    double g = readDouble("Введiть g (1e2 .. 1e5): ", 1e2, 1e5);
+
+    int M = readInt("Крок виводу M (1..100000): ", 1, 100000);
+
+    cout << fixed << setprecision(15);
+
+    double sum = 0.0;
+
+    int n = 0;
+    double u = 2.0;     // u0
+    sum += u;
+
+    cout << "n=" << n << "  u=" << u << "  sum=" << sum << "\n";
+
+    const int N_MAX = 2000000; // запобіжник
+
+    while (n < N_MAX)
+    {
+        // перевірка умов зупинки (після додавання u_n)
+        if (fabs(u) < e)
+        {
+            cout << "Зупинка: |u_n| < e (ряд збiжний за заданим критерієм)\n";
+            break;
+        }
+        if (fabs(u) > g)
+        {
+            cout << "Зупинка: |u_n| > g (ряд розбiжний за заданим критерієм)\n";
+            break;
+        }
+
+        // обчислюємо наступний елемент
+        // u_{n+1} = u_n * (3n+5) / ( x * (2n+3)*(2n+2) )
+        double ratio = (3.0 * n + 5.0) / (x * (2.0 * n + 3.0) * (2.0 * n + 2.0));
+        double uNext = u * ratio;
+
+        n++;
+        u = uNext;
+        sum += u;
+
+        if (n % M == 0)
+        {
+            cout << "n=" << n << "  u=" << u << "  sum=" << sum << "\n";
+        }
+    }
+
+    cout << "Останнi значення:\n";
+    cout << "n=" << n << "  u=" << u << "  sum=" << sum << "\n";
+}
+
+// ============================================================
+// Меню
+// ============================================================
+
+void show_menu()
+{
+    cout << "\n==============================\n";
+    cout << "Лабораторна №5 (варiанти 3,14,37)\n";
+    cout << "1 - Завдання 1 (геометрiя, варiант 3)\n";
+    cout << "2 - Завдання 2 (сума, варiант 14)\n";
+    cout << "3 - Завдання 3 (ряд, варiант 37)\n";
+    cout << "0 - Вихiд\n";
+    cout << "==============================\n";
+}
+
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int menu;
+    do
+    {
+        show_menu();
+        menu = readInt("Ваш вибiр: ", 0, 3);
+
+        switch (menu)
+        {
+            case 1: task1(); break;
+            case 2: task2(); break;
+            case 3: task3(); break;
+            case 0: cout << "Exit...\n"; break;
+            default: cout << "Wrong task!\n"; break;
+        }
+    }
+    while (menu != 0);
+
+    return 0;
+}
