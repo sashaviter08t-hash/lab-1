@@ -1,0 +1,8 @@
+Original array:
+5
+3 7 8 -5 0 
+
+Array after inserting 0 before K-th element:
+6
+3 7 0 8 -5 0 
+
